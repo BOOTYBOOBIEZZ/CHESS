@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game</title>
+    <!-- Подключение стилей Chessboard.js -->
+    <link rel="stylesheet" href="/node_modules/chessboardjs/www/css/chessboard-1.0.0.min.css">
+    <style>
+        #board {
+            width: 400px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+    <button id="create-game">Create Game</button>
+    <!-- Подключение скриптов jQuery и Chessboard.js -->
+    <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="/node_modules/chessboardjs/www/js/chessboard-1.0.0.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        document.getElementById('create-game').addEventListener('click', () => {
+            socket.emit('createGame');
+        });
+
+        socket.on('gameCreated', (gameId) => {
+            console.log('Game created with ID:', gameId);
+            // Initialize the chessboard
+            const board = Chessboard('board', {
+                draggable: true,
+                dropOffBoard: 'trash',
+                sparePieces: true
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheesse</title>
+    <link rel="stylesheet" href="node_modules/chessboardjs/www/css/chessboard-1.0.0.min.css">
+    <style>
+        #board {
+            width: 400px;
+            margin: 20px auto;
+
+        }
+
+        button {
+            display: block;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="board"></div>
+    <button id="createGame">Create Game</button>
+    <button id="joinGame">Join Game</button>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/chessboardjs/www/js/chessboard-1.0.0.min.js"></script>
+    <script>
+        const socket = io();
+        const board = Chessboard('board', {
+            draggable: true,
+            position: 'start',
+            onDrop: handleMove
+        });
+
+        let gameId;
+        let chess = new Chess();
+
+        document.getElementById('createGame').addEventListener('click', () => {
+            socket.emit('createGame');
+        });
+
+        document.getElementById('joinGame').addeventListener('click', () => {
+            gameId = prompt('Enter game ID:');
+            socket.emit('joinGame', gameId);
+
+        });
+
+        socket.on('gameCreated', (id) => {
+            gameId = id;
+            alert('Game created! ID: ${gameId}');
+
+        });
+
+        socket.on('startGame', (fen) => {
+            chess = new Chess(fen);
+            board.position(fen);
+        });
+
+        socket.on('moveMade', (fen) => {
+            chess.load(fen);
+            board.position(fen);
+        });
+
+        function handleMove(source,target){
+            const move = chess.move({from: source, to: target});
+            if(move === null) return 'snapback';
+            socket.emit('makeMove', gameId, move.san);
+        }
+
+    </script>
+</body>
+
+</html>
